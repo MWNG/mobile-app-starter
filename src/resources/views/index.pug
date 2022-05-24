@@ -1,0 +1,52 @@
+doctype html
+html(lang="no")
+    head
+        script.
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-MNWCZMS');
+        link(rel="stylesheet" href=addCacheBust("/css/app.bundle.css"))
+        meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover")
+        link(rel="prefetch" href=iconsetUrl)
+        title Trumf
+    body(ontouchstart)
+        #app
+
+        script.
+            window.startup = true
+            window.onAsyncLoad = function(){
+                window.startup = false
+            }
+            window.onerror = function(errorMessage){
+                if (window.startup) {
+                    var message = {
+                        action: "native-wrapper:fatal-error",
+                        data: { errorMessage: errorMessage }
+                    }
+
+                    if (window.Android && window.Android.performNativeAction) {
+                        window.Android.performNativeAction(JSON.stringify(message))
+                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.bridgeMessageHandler) {
+                        window.webkit.messageHandlers.bridgeMessageHandler.postMessage(JSON.stringify(message))
+                    } else {
+                        window.postMessage(JSON.stringify(message), "*")
+                    }
+
+                    console.error("fatal error", message)
+                }
+            }
+        script.
+            window._siteGlobalSettings = {
+                apiKey: !{resolveApiKey(env)},
+                platform: "native",
+                chainId: "133",
+                chainName: "Trumf",
+                eventHubLoggerMessageType: "trumfapp",
+                environment: !{parseInt(env || 1)},
+                inlineIconSetUrl: !{JSON.stringify(iconsetUrl)},
+                iconSetUrl: "",
+            }
+        script(src=addCacheBust("/js/app.bundle.js"))
+        //script(src=addCacheBust("/js/async.bundle.js") async onload="onAsyncLoad()")

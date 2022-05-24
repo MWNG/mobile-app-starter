@@ -1,0 +1,54 @@
+language: node_js
+node_js:
+- "14.18.0"
+notifications:
+  email:
+    recipients:
+      - firstname.lastname@norgesgruppen.no
+branches:
+  only:
+  - develop
+  - release/preprod
+  - release/prod
+before_install:
+- curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.16.0
+- export PATH=$HOME/.yarn/bin:$PATH
+- npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+- echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+install:
+- yarn
+script:
+- yarn build:travis
+before_deploy:
+- if [ -f ${TRAVIS_BUILD_DIR}/.git/shallow ]; then git fetch --unshallow; fi
+- rm .gitignore
+- rm .editorconfig
+- rm .eslintignore
+- rm .eslintrc
+- rm .stylelintrc
+- rm jsconfig.json
+- rm webpack.config.js
+- rm -rf node_modules
+deploy:
+- provider: azure_web_apps
+  verbose: true
+  username: $AZURE_WA_USERNAME_DEV
+  password: $AZURE_WA_PASSWORD_DEV
+  site: trumf-react-dev
+  skip_cleanup: true
+  on:
+    branch: develop
+- provider: azure_web_apps
+  verbose: true
+  username: $AZURE_WA_USERNAME_PREPROD
+  password: $AZURE_WA_PASSWORD_PREPROD
+  site: trumf-react-preprod
+  skip_cleanup: true
+  on:
+    branch: release/preprod
+- provider: azure_web_apps
+  verbose: true
+  site: trumf-react-prod
+  skip_cleanup: true
+  on:
+    branch: release/prod
